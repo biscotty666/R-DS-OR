@@ -1,0 +1,81 @@
+---
+title: "Exploratory Data Analysis"
+output: html_notebook
+---
+
+# Exploratory Data Analysis
+
+-   Generate questions about your data.
+-   Search for answers by visualizing, transforming, and modelling your data.
+
+Use what you learn to refine your questions and/or generate new questions.
+
+```{r}
+library(tidyverse)
+```
+
+## Variation
+
+-   What type of variation occurs within my variables?
+-   What type of covariation occurs between my variables?
+
+```{r}
+ggplot(diamonds, aes(carat)) +
+  geom_histogram(binwidth = 0.5)
+```
+
+### Typical Values
+
+-   Which values are the most common? Why?
+-   Which values are rare? Why? Does that match your expectations?
+-   Can you see any unusual patterns? What might explain them?
+
+```{r}
+smaller <- diamonds |> 
+  filter(carat < 3)
+
+ggplot(smaller, aes(carat)) +
+  geom_histogram(binwidth = 0.01)
+```
+
+-   Why are there more diamonds at whole carats and common fractions of carats?
+-   Why are there more diamonds slightly to the right of each peak than there are slightly to the left of each peak?
+
+Visualizations can also reveal clusters, which suggest that subgroups exist in your data. To understand the subgroups, ask:
+
+-   How are the observations within each subgroup similar to each other?
+
+-   How are the observations in separate clusters different from each other?
+
+-   How can you explain or describe the clusters?
+
+-   Why might the appearance of clusters be misleading?
+
+### Unusual values
+
+Outliers
+
+```{r}
+diamonds |> 
+  ggplot(aes(y)) +
+  geom_histogram(binwidth = 0.5)
+```
+
+The large range of the x-axis shows that there are outliers.
+
+Change the y-coordinates to magnify the outliers.
+
+```{r}
+diamonds |> 
+  ggplot(aes(y)) +
+  geom_histogram(binwidth = 0.5) +
+  coord_cartesian(ylim = c(0,50))
+```
+
+```{r}
+unusual <- diamonds |> 
+  filter(y < 3 | y > 20) |> 
+  select(price, x, y, z) |> 
+  arrange(y)
+unusual
+```

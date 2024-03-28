@@ -79,3 +79,178 @@ unusual <- diamonds |>
   arrange(y)
 unusual
 ```
+
+Drop the rows?
+
+```{r}
+diamonds2 <- diamonds |> 
+  filter(between(y, 3, 20))
+```
+
+Replace with NA!
+
+```{r}
+diamonds2 <- diamonds |> 
+  mutate(y = if_else(y < 3 | y > 20, NA, y))
+```
+
+```{r}
+ggplot(diamonds2, aes(x, y)) +
+  geom_point(na.rm = TRUE)
+```
+
+```{r}
+nycflights13::flights |> 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + (sched_min / 60)
+  ) |> 
+  ggplot(aes(sched_dep_time)) +
+  geom_freqpoly(aes(color = cancelled), binwidth = 1/4)
+```
+
+## Covariation
+
+```{r}
+ggplot(diamonds, aes(price)) +
+  geom_freqpoly(aes(color = cut), 
+                binwidth = 500,
+                linewidth = 0.75)
+```
+
+```{r}
+ggplot(diamonds, aes(price, after_stat(density))) +
+  geom_freqpoly(aes(color = cut), 
+                binwidth = 500,
+                linewidth = 0.75)
+```
+
+Note that we’re mapping the density to `y`, but since `density` is not a variable in the `diamonds` dataset, we need to first calculate it. We use the [`after_stat()`](https://ggplot2.tidyverse.org/reference/aes_eval.html) function to do so.
+
+There’s something rather surprising about this plot - it appears that fair diamonds (the lowest quality) have the highest average price! But maybe that’s because frequency polygons are a little hard to interpret - there’s a lot going on in this plot.
+
+```{r}
+ggplot(diamonds, aes(cut, price)) +
+  geom_boxplot()
+```
+
+Better diamonds are cheaper!
+
+```{r}
+ggplot(mpg, aes(class, hwy)) +
+  geom_boxplot()
+```
+
+```{r}
+ggplot(mpg, aes(fct_reorder(class, hwy, median), y = hwy)) +
+  geom_boxplot()
+```
+
+Or flip horizontally.
+
+```{r}
+ggplot(mpg, aes(hwy, fct_reorder(class, hwy, median))) +
+  geom_boxplot()
+```
+
+### Two categorical variables
+
+Size represents the number of occurrences
+
+```{r}
+ggplot(diamonds, aes(cut, color)) +
+  geom_count()
+```
+
+```{r}
+diamonds |> 
+  count(color, cut)
+```
+
+```{r}
+diamonds |> 
+  count(color, cut) |> 
+  ggplot(aes(color, cut)) +
+  geom_tile(aes(fill = n))
+```
+
+### Two numeric variables
+
+```{r}
+smaller |> 
+  ggplot(aes(carat, price)) +
+  geom_point()
+```
+
+```{r}
+smaller |> 
+  ggplot(aes(carat, price)) +
+  geom_point(alpha = 1 / 100)
+```
+
+[`geom_bin2d()`](https://ggplot2.tidyverse.org/reference/geom_bin_2d.html) and [`geom_hex()`](https://ggplot2.tidyverse.org/reference/geom_hex.html) divide the coordinate plane into 2d bins and then use a fill color to display how many points fall into each bin. [`geom_bin2d()`](https://ggplot2.tidyverse.org/reference/geom_bin_2d.html) creates rectangular bins. [`geom_hex()`](https://ggplot2.tidyverse.org/reference/geom_hex.html) creates hexagonal bins. You will need to install the hexbin package to use [`geom_hex()`](https://ggplot2.tidyverse.org/reference/geom_hex.html).
+
+```{r}
+smaller |> 
+  ggplot(aes(carat, price)) +
+  geom_bin2d()
+```
+
+```{r}
+smaller |> 
+  ggplot(aes(carat, price)) +
+  geom_hex()
+```
+
+Another option is to **bin one continuous variable** so it acts like a
+categorical variable. Then you can use one of the techniques for
+visualizing the combination of a categorical and a continuous variable
+that you learned about. For example, you could bin `carat` and then for each group, display a boxplot:
+
+```{r}
+ggplot(smaller, aes(carat, price)) +
+  geom_boxplot(aes(group = cut_width(carat, 0.1)))
+```
+
+```{r}
+ggplot(smaller, aes(carat, price)) +
+  geom_boxplot(aes(group = cut_width(carat, 0.1)), varwidth=TRUE)
+```
+
+## Patterns and models
+
+-   Could this pattern be due to coincidence (i.e. random chance)?
+-   How can you describe the relationship implied by the pattern?
+-   How strong is the relationship implied by the pattern?
+-   What other variables might affect the relationship?
+-   Does the relationship change if you look at individual subgroups of the data?
+
+```{r}
+library(tidymodels)
+
+diamonds3 <- diamonds |> 
+  mutate(
+    log_price = log(price),
+    log_carat = log(carat)
+  )
+
+diamonds_fit <- linear_reg() |> 
+  fit(log_price ~ log_carat, data = diamonds3)
+
+diamonds_aug <- augment(diamonds_fit, new_data = diamonds3) |> 
+  mutate(.resid = exp(.resid))
+
+ggplot(diamonds_aug, aes(carat, .resid)) +
+  geom_point()
+```
+
+Once you’ve removed the strong relationship between carat and price, you
+can see what you expect in the relationship between cut and price:
+relative to their size, better quality diamonds are more expensive.
+
+```{r}
+ggplot(diamonds_aug, aes(cut, .resid)) +
+  geom_boxplot()
+```

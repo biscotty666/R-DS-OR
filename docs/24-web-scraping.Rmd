@@ -1,0 +1,242 @@
+---
+title: "Web Scraping"
+output: html_notebook
+---
+
+# Web Scraping {#sec-web-scraping}
+
+library(tidyverse) library(rvest)
+
+## Extracting data {#sec-extracting-data}
+
+```{r}
+html <- read_html("http://rvest.tidyverse.org/")
+html
+```
+
+```{r}
+html <- minimal_html(
+  "
+  <p>This is a paragraph</p>
+  <ul>
+    <li>This is a bulleted list</li>
+  </ul>
+  "
+)
+html
+```
+
+## Find elements
+
+```{r}
+html <- minimal_html("
+  <h1>This is a heading</h1>
+  <p id='first'>This is a paragraph</p>
+  <p class='important'>This is an important paragraph</p>
+")
+html |> html_elements("p")
+html |> html_elements(".important")
+html |> html_elements("#first")
+```
+
+matches first found
+
+```{r}
+html |> html_element("p")
+```
+
+different return for non-existent element
+
+```{r}
+html |> html_elements("b")
+html |> html_element("b")
+```
+
+Nested selectors
+
+```{r}
+html <- minimal_html("
+  <ul>
+    <li><b>C-3PO</b> is a <i>droid</i> that weighs <span class='weight'>167 kg</span></li>
+    <li><b>R4-P17</b> is a <i>droid</i></li>
+    <li><b>R2-D2</b> is a <i>droid</i> that weighs <span class='weight'>96 kg</span></li>
+    <li><b>Yoda</b> weighs <span class='weight'>66 kg</span></li>
+  </ul>
+  ")
+characters <- html |> html_elements("li")
+characters
+```
+
+In this case, the following are equivalent
+
+```{r}
+characters |> html_elements("b")
+characters |> html_element("b")
+identical(characters |> html_elements("b"), characters |> html_element("b"))
+```
+
+Here they are not. The singular version must be used to ensure a vector doesn't get shortened
+
+```{r}
+characters |> html_element(".weight")
+characters |> html_elements(".weight")
+```
+
+## Text and attributes {#sec-text-and-attributes}
+
+`html_text2()` for plain text contents of an element
+
+```{r}
+characters |> 
+  html_element("b") |> 
+  html_text2()
+characters |> 
+  html_element(".weight") |> 
+  html_text2()
+```
+
+`html_attr()` for attributes
+
+```{r}
+html <- minimal_html("
+  <p><a href='https://en.wikipedia.org/wiki/Cat'>cats</a></p>
+  <p><a href='https://en.wikipedia.org/wiki/Dog'>dogs</a></p>
+")
+
+html |> 
+  html_elements("p") |> 
+  html_element("a") |> 
+  html_attr("href")
+```
+
+## Tables {#sec-tables}
+
+```{r}
+html <- minimal_html("
+  <table class='mytable'>
+    <tr><th>x</th>   <th>y</th></tr>
+    <tr><td>1.5</td> <td>2.7</td></tr>
+    <tr><td>4.9</td> <td>1.3</td></tr>
+    <tr><td>7.2</td> <td>8.1</td></tr>
+  </table>
+  ")
+```
+
+```{r}
+html |> 
+  html_element(".mytable") |> 
+  html_table()
+```
+
+## Star Wars
+
+Structure of page
+
+``` html
+<section>
+  <h2 data-id="1">The Phantom Menace</h2>
+  <p>Released: 1999-05-19</p>
+  <p>Director: <span class="director">George Lucas</span></p>
+  
+  <div class="crawl">
+    <p>...</p>
+    <p>...</p>
+    <p>...</p>
+  </div>
+</section>
+```
+
+Goal:
+
+Turn this data into a 7 row data frame with variables title, year, director, and intro.
+
+```{r}
+url <- "https://rvest.tidyverse.org/articles/starwars.html"
+html <- read_html(url)
+```
+
+```{r}
+section <- html |> html_elements("section")
+print.AsIs(section[1])
+```
+
+```{r}
+tibble(
+  title = section |> 
+    html_element("h2") |> 
+    html_text2(),
+  released = section |> 
+    html_element("p") |> 
+    html_text2() |> 
+    str_remove("Released: ") |> 
+    parse_date(),
+  director = section |> 
+    html_element(".director") |> 
+    html_text2(),
+  intro = section |> 
+    html_element(".crawl") |> 
+    html_text2()
+)
+```
+
+## IMDB top films
+
+Extract the top 250 movies from the internet movie database (IMDb)
+
+```{r}
+url <- "https://web.archive.org/web/20220201012049/https://www.imdb.com/chart/top/"
+html <- read_html(url)
+
+table <- html |> 
+  html_element("table") |> 
+  html_table()
+print.AsIs(head(table))
+```
+
+```{r}
+ratings <- table |> 
+  select(
+    rank_title_year = `Rank & Title`,
+    rating = `IMDb Rating`
+  ) |> 
+  mutate(
+    rank_title_year = str_replace_all(rank_title_year, "\n +", " ")
+  ) |> 
+  separate_wider_regex(
+    rank_title_year,
+    patterns = c(
+      rank = "\\d+", "\\. ",
+      title = ".+", " +\\(",
+      year = "\\d+", "\\)"
+    )
+  )
+ratings |> head(10) |>  print.AsIs()
+```
+
+Even in this case where most of the data comes from table cells, it’s still worth looking at the raw HTML. If you do so, you’ll discover that we can add a little extra data by using one of the attributes. This is one of the reasons it’s worth spending a little time spelunking the source of the page; you might find extra data, or might find a parsing route that’s slightly easier.
+
+```{r}
+html |> 
+  html_elements("td strong") |> 
+  head() |> 
+  html_attr("title")
+```
+
+```{r}
+ratings |>
+  mutate(
+    rating_n = html |> html_elements("td strong") |> html_attr("title")
+  ) |> 
+  separate_wider_regex(
+    rating_n,
+    patterns = c(
+      "[0-9.]+ based on ",
+      number = "[0-9,]+",
+      " user ratings"
+    )
+  ) |> 
+  mutate(
+    number = parse_number(number)
+  ) |> 
+  head(6) |> print.AsIs()
+```

@@ -1,0 +1,118 @@
+---
+title: "Data Visualization Exercises"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+library(ggthemes)
+```
+
+# 1.2.5 Exercises
+
+1.  How many rows are in `penguins`? How many columns?
+
+```{r}
+nrow(penguins)
+ncol(penguins)
+```
+
+2.  What does the `bill_depth_mm` variable in the `penguins` data frame describe? Read the help for `?penguins` to find out.
+
+a number denoting bill depth (millimeters)
+
+3.  Make a scatterplot of `bill_depth_mm` vs. `bill_length_mm`. That is, make a scatterplot with `bill_depth_mm` on the y-axis and `bill_length_mm` on the x-axis. Describe the relationship between these two variables.
+
+```{r}
+penguins |> 
+  ggplot(aes(y = bill_depth_mm, x = bill_length_mm)) +
+  geom_point(na.rm = TRUE)
+```
+
+Positive linear correlation
+
+4.  What happens if you make a scatterplot of `species` vs. `bill_depth_mm`? What might be a better choice of geom?
+
+```{r}
+penguins |> 
+  ggplot(aes(bill_depth_mm, species)) +
+  geom_point(na.rm = TRUE)
+```
+
+5.  Why does the following give an error and how would you fix it?
+
+    ```{r, eval=FALSE}
+
+    ggplot(data = penguins) + 
+      geom_point()
+    ```
+
+    Missing aesthetics
+
+6.  What does the `na.rm` argument do in `geom_point()`? What is the default value of the argument? Create a scatterplot where you successfully use this argument set to `TRUE`.
+
+7.  Add the following caption to the plot you made in the previous exercise: "Data come from the palmerpenguins package." Hint: Take a look at the documentation for `labs()`.
+
+    ```{r}
+    penguins |> 
+      ggplot(aes(bill_depth_mm, bill_length_mm)) +
+      geom_point(na.rm = TRUE) +
+      labs(caption = "Data come from the palmerpenguins package.")
+
+    ```
+
+8.  Recreate the following visualization. What aesthetic should `bill_depth_mm` be mapped to? And should it be mapped at the global level or at the geom level?
+
+    ```{r, warning=FALSE}
+    #| echo: false
+    #| warning: false
+    #| fig-alt: |
+    #|   A scatterplot of body mass vs. flipper length of penguins, colored 
+    #|   by bill depth. A smooth curve of the relationship between body mass 
+    #|   and flipper length is overlaid. The relationship is positive, 
+    #|   fairly linear, and moderately strong.
+
+    ggplot(
+      data = penguins,
+      mapping = aes(x = flipper_length_mm, y = body_mass_g)
+    ) +
+      geom_point(aes(color = bill_depth_mm)) +
+      geom_smooth()
+    ```
+
+9.  Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
+
+    ```{r}
+    #| eval: false
+
+    ggplot(
+      data = penguins,
+      mapping = aes(x = flipper_length_mm, y = body_mass_g, color = island)
+    ) +
+      geom_point() +
+      geom_smooth(se = FALSE)
+    ```
+
+10. Will these two graphs look different? Why/why not?
+
+    ```{r}
+    #| eval: false
+
+    ggplot(
+      data = penguins,
+      mapping = aes(x = flipper_length_mm, y = body_mass_g)
+    ) +
+      geom_point() +
+      geom_smooth()
+
+    ggplot() +
+      geom_point(
+        data = penguins,
+        mapping = aes(x = flipper_length_mm, y = body_mass_g)
+      ) +
+      geom_smooth(
+        data = penguins,
+        mapping = aes(x = flipper_length_mm, y = body_mass_g)
+      )
+    ```

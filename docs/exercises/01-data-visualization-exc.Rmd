@@ -14,9 +14,10 @@ library(ggthemes)
 1.  How many rows are in `penguins`? How many columns?
 
 ```{r}
-nrow(penguins)
-ncol(penguins)
+dim(penguins)
 ```
+
+Rows: 344, Columns: 8
 
 2.  What does the `bill_depth_mm` variable in the `penguins` data frame describe? Read the help for `?penguins` to find out.
 
@@ -40,6 +41,12 @@ penguins |>
   geom_point(na.rm = TRUE)
 ```
 
+```{r}
+penguins |> 
+  ggplot(aes(species)) +
+  geom_bar()
+```
+
 5.  Why does the following give an error and how would you fix it?
 
     ```{r, eval=FALSE}
@@ -51,6 +58,12 @@ penguins |>
     Missing aesthetics
 
 6.  What does the `na.rm` argument do in `geom_point()`? What is the default value of the argument? Create a scatterplot where you successfully use this argument set to `TRUE`.
+
+```{r}
+penguins |> 
+  ggplot(aes(bill_length_mm, bill_depth_mm)) +
+  geom_point(na.rm = TRUE)
+```
 
 7.  Add the following caption to the plot you made in the previous exercise: "Data come from the palmerpenguins package." Hint: Take a look at the documentation for `labs()`.
 
@@ -64,21 +77,11 @@ penguins |>
 
 8.  Recreate the following visualization. What aesthetic should `bill_depth_mm` be mapped to? And should it be mapped at the global level or at the geom level?
 
-    ```{r, warning=FALSE}
-    #| echo: false
-    #| warning: false
-    #| fig-alt: |
-    #|   A scatterplot of body mass vs. flipper length of penguins, colored 
-    #|   by bill depth. A smooth curve of the relationship between body mass 
-    #|   and flipper length is overlaid. The relationship is positive, 
-    #|   fairly linear, and moderately strong.
-
+    ```{r}
     ggplot(
-      data = penguins,
-      mapping = aes(x = flipper_length_mm, y = body_mass_g)
-    ) +
-      geom_point(aes(color = bill_depth_mm)) +
-      geom_smooth()
+      penguins, aes(flipper_length_mm, body_mass_g)) +
+      geom_point(aes(color = bill_depth_mm), na.rm = TRUE) +
+      geom_smooth(method = "lm")
     ```
 
 9.  Run this code in your head and predict what the output will look like. Then, run the code in R and check your predictions.
@@ -94,7 +97,7 @@ penguins |>
       geom_smooth(se = FALSE)
     ```
 
-10. Will these two graphs look different? Why/why not?
+10. Will these two graphs look different? Why/why not? same
 
     ```{r}
     #| eval: false
@@ -116,3 +119,5 @@ penguins |>
         mapping = aes(x = flipper_length_mm, y = body_mass_g)
       )
     ```
+
+# **1.4.3 Exercises**

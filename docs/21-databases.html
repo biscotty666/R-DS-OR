@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title></title>
+<style type="text/css">
+/**
+ * Prism.s theme ported from highlight.js's xcode style
+ */
+pre code {
+  padding: 1em;
+}
+.token.comment {
+  color: #007400;
+}
+.token.punctuation {
+  color: #999;
+}
+.token.tag,
+.token.selector {
+  color: #aa0d91;
+}
+.token.boolean,
+.token.number,
+.token.constant,
+.token.symbol {
+  color: #1c00cf;
+}
+.token.property,
+.token.attr-name,
+.token.string,
+.token.char,
+.token.builtin {
+  color: #c41a16;
+}
+.token.inserted {
+  background-color: #ccffd8;
+}
+.token.deleted {
+  background-color: #ffebe9;
+}
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  color: #9a6e3a;
+}
+.token.atrule,
+.token.attr-value,
+.token.keyword {
+  color: #836c28;
+}
+.token.function,
+.token.class-name {
+  color: #DD4A68;
+}
+.token.regex,
+.token.important,
+.token.variable {
+  color: #5c2699;
+}
+.token.important,
+.token.bold {
+  font-weight: bold;
+}
+.token.italic {
+  font-style: italic;
+}
+</style>
+<style type="text/css">
+body {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+body, .footnotes, code { font-size: .9em; }
+li li { font-size: .95em; }
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+pre, img { max-width: 100%; }
+pre, pre:hover {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+pre code {
+  display: block;
+  overflow-x: auto;
+}
+code { font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace; }
+:not(pre) > code, code[class] { background-color: #F8F8F8; }
+code.language-undefined, pre > code:not([class]) {
+  background-color: inherit;
+  border: 1px solid #eee;
+}
+table {
+  margin: auto;
+  border-top: 1px solid #666;
+}
+table thead th { border-bottom: 1px solid #ddd; }
+th, td { padding: 5px; }
+thead, tfoot, tr:nth-child(even) { background: #eee; }
+blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 1em;
+  border-left: 0.5em solid #eee;
+}
+hr, .footnotes::before { border: 1px dashed #ddd; }
+.frontmatter { text-align: center; }
+#TOC .numbered li { list-style: none; }
+#TOC .numbered { padding-left: 0; }
+#TOC .numbered ul { padding-left: 1em; }
+table, .body h2 { border-bottom: 1px solid #666; }
+.body .appendix, .appendix ~ h2 { border-bottom-style: dashed; }
+.footnote-ref a::before { content: "["; }
+.footnote-ref a::after { content: "]"; }
+section.footnotes::before {
+  content: "";
+  display: block;
+  max-width: 20em;
+}
+
+@media print {
+  body {
+    font-size: 12pt;
+    max-width: 100%;
+  }
+  tr, img { page-break-inside: avoid; }
+}
+@media only screen and (min-width: 992px) {
+  pre { white-space: pre; }
+}
+</style>
+</head>
+<body>
+<div class="frontmatter">
+<div class="title"><h1></h1></div>
+<div class="author"><h2></h2></div>
+<div class="date"><h3></h3></div>
+</div>
+<div class="body">
+<pre><code class="language-r">library(DBI)
+library(dbplyr)
+library(tidyverse)
+</code></pre>
+<pre><code>## ── Attaching core tidyverse packages ────────────────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.4     ✔ readr     2.1.5
+## ✔ forcats   1.0.0     ✔ stringr   1.5.1
+## ✔ ggplot2   3.5.0     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+## ✔ purrr     1.0.2     
+## ── Conflicts ──────────────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ dplyr::filter() masks stats::filter()
+## ✖ dplyr::ident()  masks dbplyr::ident()
+## ✖ dplyr::lag()    masks stats::lag()
+## ✖ dplyr::sql()    masks dbplyr::sql()
+## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
+</code></pre>
+<pre><code class="language-r"># Connecting and Basics ---------------------------------------------------
+
+con &lt;- dbConnect(duckdb::duckdb(),
+  dbdir = &quot;data/duckdb&quot;
+)
+</code></pre>
+<pre><code>## Warning in file(con, &quot;w&quot;): cannot open file 'data/duckdb': No such file or directory
+</code></pre>
+<pre><code>## Error in file(con, &quot;w&quot;): cannot open the connection
+</code></pre>
+<pre><code class="language-r">dbWriteTable(con, &quot;mpg&quot;, ggplot2::mpg, overwrite = TRUE)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbWriteTable': object 'con' not found
+</code></pre>
+<pre><code class="language-r"># dbDisconnect(con, shutdown = TRUE)
+# con &lt;- dbConnect(duckdb::duckdb(),
+#   dbdir = &quot;data/duckdb&quot;
+# )
+dbWriteTable(con, &quot;diamonds&quot;, ggplot2::diamonds, overwrite = TRUE)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbWriteTable': object 'con' not found
+</code></pre>
+<pre><code class="language-r">dbListTables(con)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbListTables': object 'con' not found
+</code></pre>
+<pre><code class="language-r">con |&gt;
+  dbReadTable(&quot;diamonds&quot;) |&gt;
+  as_tibble()
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbReadTable': object 'con' not found
+</code></pre>
+<pre><code class="language-r">sql &lt;- &quot;
+  SELECT carat, cut, clarity, color, price
+  FROM diamonds
+  WHERE price &gt; 15000
+&quot;
+as_tibble(dbGetQuery(con, sql))
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbGetQuery': object 'con' not found
+</code></pre>
+<pre><code class="language-r"># dbplyr basics -----------------------------------------------------------
+
+diamonds_db &lt;- tbl(con, &quot;diamonds&quot;)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'con' not found
+</code></pre>
+<pre><code class="language-r">diamonds_db
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'diamonds_db' not found
+</code></pre>
+<pre><code class="language-r">big_diamonds_db &lt;- diamonds_db |&gt; 
+  filter(price &gt; 15000) |&gt; 
+  select(carat:clarity, price)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'diamonds_db' not found
+</code></pre>
+<pre><code class="language-r">big_diamonds_db
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'big_diamonds_db' not found
+</code></pre>
+<pre><code class="language-r">big_diamonds_db |&gt; 
+  show_query()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'big_diamonds_db' not found
+</code></pre>
+<pre><code class="language-r">big_diamonds &lt;- big_diamonds_db |&gt; 
+  collect()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'big_diamonds_db' not found
+</code></pre>
+<pre><code class="language-r">big_diamonds
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'big_diamonds' not found
+</code></pre>
+<pre><code class="language-r"># There are two other common ways to interact with a database. First, many corporate databases are very large so you need some hierarchy to keep all the tables organized. In that case you might need to supply a schema, or a catalog and a schema, in order to pick the table you’re interested in:
+#
+# diamonds_db &lt;- tbl(con, in_schema(&quot;sales&quot;, &quot;diamonds&quot;))
+# diamonds_db &lt;- tbl(con, in_catalog(&quot;north_america&quot;, &quot;sales&quot;, &quot;diamonds&quot;))
+#
+# Other times you might want to use your own SQL query as a starting point:
+#
+# diamonds_db &lt;- tbl(con, sql(&quot;SELECT * FROM diamonds&quot;))
+
+
+# SQL ---------------------------------------------------------------------
+
+dbplyr::copy_nycflights13(con)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbListTables': object 'con' not found
+</code></pre>
+<pre><code class="language-r">flights &lt;- tbl(con, &quot;flights&quot;)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'con' not found
+</code></pre>
+<pre><code class="language-r">planes &lt;- tbl(con, &quot;planes&quot;)
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'con' not found
+</code></pre>
+<pre><code class="language-r">flights |&gt; show_query()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'flights' not found
+</code></pre>
+<pre><code class="language-r">flights |&gt; 
+  filter(dest == &quot;IAH&quot;) |&gt; 
+  arrange(dep_delay) |&gt; 
+  show_query()
+</code></pre>
+<pre><code>## Error in eval(expr, envir, enclos): object 'flights' not found
+</code></pre>
+<pre><code class="language-r">dbDisconnect(con, shutdown=TRUE)
+</code></pre>
+<pre><code>## Error in h(simpleError(msg, call)): error in evaluating the argument 'conn' in selecting a method for function 'dbDisconnect': object 'con' not found
+</code></pre>
+<pre><code class="language-r">#
+</code></pre>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-core.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/autoloader/prism-autoloader.min.js" defer></script>
+</body>
+</html>
